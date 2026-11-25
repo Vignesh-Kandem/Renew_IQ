@@ -1,0 +1,47 @@
+:host {
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 24px;
+  width: 202px;
+  z-index: 45;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--moss-border);
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+button:hover { border-color: var(--neon); }
+button:focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; }
+.settings-trigger { display: flex; align-items: center; gap: 10px; width: 100%; font-size: .85rem; box-shadow: 0 3px 16px rgba(0,0,0,.08); }
+.chevron { margin-left: auto; color: var(--muted); }
+.settings-panel {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: min(300px, calc(100vw - 32px));
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--moss-border);
+  border-radius: 16px;
+  box-shadow: var(--hover-shadow);
+}
+h2 { margin: 0 0 18px; }
+.preference{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:64px;padding:16px 0;border-top:1px solid var(--moss-border)}
+.preference strong{display:block;font-size:.8rem;font-weight:600}
+.toggle-control{display:flex;align-items:center;flex:none}
+button.toggle{position:relative;width:46px;height:26px;min-height:26px;padding:3px;border-radius:99px;background:var(--surface-2);border:1px solid var(--moss-dim);transition:background .18s,border-color .18s}
+button.toggle[aria-checked='true']{background:var(--button-bg);border-color:var(--highlight)}
+.toggle-thumb{display:block;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .18s;box-shadow:0 1px 3px #0002}
+.toggle[aria-checked='true'] .toggle-thumb{transform:translateX(20px);background:var(--on-accent)}
+.account { padding-top: 14px; border-top: 1px solid var(--moss-border); }
+.account p { font-size: .75rem; overflow-wrap: anywhere; margin-bottom: 10px; }
+.logout { width: 100%; color: var(--danger); background: transparent; }
+@media (max-width: 1024px) {
+  :host { left: 16px; bottom: max(12px, env(safe-area-inset-bottom)); width: 150px; }
+}

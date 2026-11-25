@@ -1,0 +1,73 @@
+<section class="assistant-shell">
+  <header class="chat-header">
+    <div><h1>AI Assistant <span class="beta">RenewIQ</span></h1><p>Your subscriptions, made simpler.</p></div>
+    <div class="chat-actions">
+      <app-conversation-history [entries]="conversations()" [activeId]="conversationId()" [busy]="sending() || documentBusy() || historyLoading()" (selectConversation)="openConversation($event)" (renameConversation)="renameConversation($event)" (deleteConversation)="deleteConversation($event)" />
+      <button type="button" class="btn-ghost" [disabled]="sending() || documentBusy() || historyLoading()" (click)="clear()">＋ New chat</button>
+    </div>
+  </header>
+
+  <div class="scroller" #scroller role="log" aria-label="Conversation" aria-live="polite" [attr.aria-busy]="sending()">
+    @if (historyLoading()) { <p class="muted" role="status">Loading your saved conversation…</p> }
+    @if (!messages().length && !historyLoading()) {
+      <div class="welcome">
+        <span class="spark" aria-hidden="true">✦</span>
+        <p class="eyebrow">YOUR PERSONAL SUBSCRIPTION ASSISTANT</p>
+        <h2>Hi{{ firstName() ? ', ' + firstName() : '' }}.<br />What would you like to explore?</h2>
+        <p>Understand your spending, stay ahead of renewals,<br class="desktop-break" /> or attach a document and ask away.</p>
+        <div class="suggestions">
+          @for (suggestion of suggestions; track $index) {
+            <button type="button" [disabled]="documentBusy() || historyLoading() || recovering()" (click)="send(suggestion)">
+              <span class="suggestion-icon" aria-hidden="true">{{ ['↗', '◷', '◇', '▥'][$index] }}</span>
+              <span>{{ suggestion }}</span><span class="suggestion-arrow" aria-hidden="true">↗</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+    @for (m of messages(); track $index; let i = $index) {
+      <article class="msg" [class.me]="m.role === 'user'">
+        @if (m.role === 'assistant') { <span class="av" aria-label="Assistant">✦</span> }
+        <div class="stack">
+          @if (m.attachments?.length) {
+            <div class="message-files">
+              @for (file of m.attachments; track file.id) { <span class="file-tag">▤ {{ file.name }}</span> }
+            </div>
+          }
+          <div class="bubble" [class.err]="m.error">{{ m.content }}</div>
+          @for (chart of m.charts ?? []; track $index) { <app-assistant-chart [chart]="chart" /> }
+          @if (m.sources?.length) {
+            <details class="sources"><summary>{{ m.sources?.length }} document references</summary>
+              <p class="muted">Excerpts supplied to the assistant. Check them against its answer.</p>
+              @for (source of m.sources; track $index) {
+                <p><strong>{{ source.name }} · document {{ source.documentId }}, chunk {{ source.chunk }}</strong></p>
+                <p class="excerpt">{{ source.text }}</p>
+              }
+            </details>
+          }
+          @if (m.action) {
+            <div class="action">
+              <div><strong>{{ verb(m.action.status) }} {{ m.action.subscriptionName }}?</strong><p class="muted">This change needs your confirmation.</p></div>
+              @if (m.actionState === 'done') { <span class="ok">✓ Updated</span> }
+              @else if (m.actionState === 'dismissed') { <span class="muted">Dismissed</span> }
+              @else {
+                <div class="action-btns">
+                  <button type="button" class="btn-ghost" [disabled]="m.actionState === 'busy'" (click)="dismiss(i)">Not now</button>
+                  <button type="button" class="btn" [attr.data-click-sound]="m.action.status === 'CANCELLED' ? 'delete' : 'update'" (click)="confirm(i)" [disabled]="m.actionState === 'busy'">{{ m.actionState === 'busy' ? 'Applying…' : 'Confirm' }}</button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </article>
+    }
+    @if (sending() || recovering()) {
+      <div class="msg"><span class="av" aria-hidden="true">✦</span><div class="typing" role="status" aria-label="Assistant is thinking"><i></i><i></i><i></i></div></div>
+    }
+  </div>
+
+  <app-chat-composer [documents]="documents()" [selectedIds]="selectedIds()" [sending]="sending() || historyLoading() || recovering()"
+    [documentBusy]="documentBusy()" [documentMessage]="documentMessage()" [documentError]="documentError()"
+    [(draft)]="draft" (sendMessage)="send()" (uploadFile)="uploadDocument($event)"
+    (toggleDocument)="toggleDocument($event)" (deleteDocument)="deleteDocument($event)" />
+</section>

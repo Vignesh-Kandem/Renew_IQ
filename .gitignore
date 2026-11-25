@@ -1,0 +1,12 @@
+# Local secrets and generated outputs
+.env
+.env.*
+!.env.example
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+database/backups/
+renewiq_backup.sql
+.qa/
+backend/*.log

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="RenewIQ">
+  <defs>
+    <linearGradient id="g" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b7c2ce"/>
+      <stop offset="1" stop-color="#ff8058"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#g)"/>
+  <path d="M43.49 22.36A15 15 0 1 1 26.87 17.9" fill="none" stroke="#1e242c" stroke-width="4.6" stroke-linecap="round"/>
+  <path d="M23.75 13.71L27.17 23.11L32.04 16.02Z" fill="#1e242c" stroke="#1e242c" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M32 24.5C32.8 29 35 31.2 39.5 32C35 32.8 32.8 35 32 39.5C31.2 35 29 32.8 24.5 32C29 31.2 31.2 29 32 24.5Z" fill="#1e242c"/>
+</svg>

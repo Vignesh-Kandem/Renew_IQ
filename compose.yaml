@@ -1,0 +1,64 @@
+name: renewiq
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: renewiq_db
+      MYSQL_USER: renewiq
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Run ./start-docker.ps1 to generate local credentials}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Run ./start-docker.ps1 to generate local credentials}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u\"$$MYSQL_USER\" -D\"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    restart: unless-stopped
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/renewiq_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: renewiq
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      AI_API_KEY: ${AI_API_KEY:-${GROQ_API_KEY:-}}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.groq.com/openai/v1}
+      AI_MODEL: ${AI_MODEL:-openai/gpt-oss-20b}
+      REMINDER_EMAIL_ENABLED: ${REMINDER_EMAIL_ENABLED:-false}
+      REMINDER_FROM: ${REMINDER_FROM:-}
+      REMINDER_TIMEZONE: ${REMINDER_TIMEZONE:-Asia/Kolkata}
+      REMINDER_CRON: ${REMINDER_CRON:-0 0 9 * * *}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent http://localhost:8081/actuator/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 40s
+    restart: unless-stopped
+  frontend:
+    build: ./frontend
+    ports:
+      - "${APP_PORT:-8080}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  mysql_data:

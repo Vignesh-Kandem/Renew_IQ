@@ -1,0 +1,19 @@
+USE renewiq_db;
+
+SHOW TABLES;
+
+-- Primary keys and foreign keys, with their targets.
+SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME,
+       REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = DATABASE()
+ORDER BY TABLE_NAME, CONSTRAINT_NAME, ORDINAL_POSITION;
+
+-- Delete behavior for each foreign key.
+SELECT TABLE_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, DELETE_RULE
+FROM information_schema.REFERENTIAL_CONSTRAINTS
+WHERE CONSTRAINT_SCHEMA = DATABASE()
+ORDER BY TABLE_NAME;
+
+SELECT installed_rank, version, description, success
+FROM flyway_schema_history ORDER BY installed_rank;

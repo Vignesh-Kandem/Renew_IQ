@@ -1,0 +1,53 @@
+  <div class="composer-dock">
+    @if (documentMessage) { <p class="upload-status" [class.error]="documentError" role="status">{{ documentMessage }}</p> }
+    <form class="composer" (ngSubmit)="send()" [class.working]="documentBusy">
+      @if (selectedDocuments.length) {
+        <div class="attached-files" aria-label="Documents attached to this conversation">
+          @for (file of selectedDocuments; track file.id) {
+            <div class="attachment-chip">
+              <span class="file-icon" aria-hidden="true">▤</span>
+              <span class="file-info"><strong>{{ file.name }}</strong><small>Document · ready</small></span>
+              <button type="button" class="remove-file" [disabled]="sending || documentBusy" [attr.aria-label]="'Detach ' + file.name" title="Detach from chat (keep in library)" (click)="toggleDocument.emit(file.id)">×</button>
+            </div>
+          }
+        </div>
+      }
+      <label class="sr-only" for="assistant-message">Message the assistant</label>
+      <textarea #messageInput id="assistant-message" rows="1" name="draft" [ngModel]="draft" (ngModelChange)="draftChange.emit($event)" maxlength="2000"
+                placeholder="Ask anything about your subscriptions…" (input)="resizeInput(messageInput)" (keydown.enter)="onEnter($any($event))"></textarea>
+      <div class="composer-tools">
+        <div class="attachment-control">
+          <input #filePicker class="sr-only" type="file" tabindex="-1" accept=".txt,.md" aria-label="Choose a document" (change)="attachmentMenu.set(false); uploadFile.emit($event)" />
+          <button #attachmentButton type="button" class="icon-button attach-button" [disabled]="sending || documentBusy"
+                  aria-label="Add attachments" title="Add attachments" aria-controls="attachment-menu" [attr.aria-expanded]="attachmentMenu()" (click)="attachmentMenu.set(!attachmentMenu())">＋</button>
+          @if (attachmentMenu()) {
+            <section id="attachment-menu" class="attachment-menu" aria-label="Attach documents">
+              <button type="button" class="upload-option" [disabled]="documentBusy || sending" (click)="filePicker.click()">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l8-8M6 14l8-8" /></svg>
+                <span><strong>Upload a document</strong><small>TXT or Markdown · up to 200 KB</small></span><span aria-hidden="true">↗</span>
+              </button>
+              <div class="library-heading">YOUR DOCUMENTS <span>{{ documents.length }}</span></div>
+              <div class="library-list">
+                @for (file of documents; track file.id) {
+                  <div class="library-row">
+                    <button type="button" class="library-file" [disabled]="documentBusy || sending" [attr.aria-pressed]="selectedIds.includes(file.id)" (click)="toggleDocument.emit(file.id)">
+                      <span aria-hidden="true">{{ selectedIds.includes(file.id) ? '✓' : '▤' }}</span><span>{{ file.name }}</span>
+                    </button>
+                    <button type="button" class="delete-file" [disabled]="documentBusy || sending" data-click-sound="delete" [attr.aria-label]="'Delete ' + file.name + ' from library'" title="Delete from library" (click)="deleteDocument.emit(file.id)">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7" /></svg>
+                    </button>
+                  </div>
+                } @empty { <p class="library-empty">Your uploaded files will appear here.</p> }
+              </div>
+              <p class="library-note">Choose files to use in this chat. Relevant excerpts are shared with the AI provider.</p>
+            </section>
+          }
+        </div>
+        <span class="composer-hint">{{ documentBusy ? 'Uploading document…' : selectedDocuments.length ? selectedDocuments.length + ' attached' : 'Attach a policy or ask a question' }}</span>
+        <button type="submit" class="send-button" [disabled]="sending || documentBusy || !draft.trim()" aria-label="Send message" title="Send message">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" /></svg>
+        </button>
+      </div>
+    </form>
+    <p class="disclaimer">AI can make mistakes. Check important amounts and dates.</p>
+  </div>
